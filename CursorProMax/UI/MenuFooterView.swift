@@ -10,11 +10,15 @@ struct MenuFooterView: View {
         GlassEffectContainer(spacing: 8) {
             HStack(spacing: 8) {
                 Button(action: updates.checkForUpdates) {
-                    Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath")
+                    Label(
+                        updates.hasPendingUpdate ? "Update Available" : "Check for Updates",
+                        systemImage: updates.hasPendingUpdate ? "arrow.down.circle.fill" : "arrow.triangle.2.circlepath"
+                    )
                         .lineLimit(1)
                         .fixedSize()
                         .frame(maxWidth: .infinity)
                 }
+                .tint(updates.hasPendingUpdate ? .accentColor : nil)
                 .disabled(!updates.canCheckForUpdates)
                 Button {
                     openURL(Self.donationURL)

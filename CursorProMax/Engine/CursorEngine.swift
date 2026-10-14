@@ -13,6 +13,8 @@ final class CursorEngine {
     }
 
     static let largestCursorScale = WindowServer.cursorScaleRange.upperBound
+    static let settleRate = 8.0
+    static let reducedMotionSettleRate = 40.0
 
     private(set) var scale = CursorGrowth.restingScale
     private(set) var phase = Phase.idle
@@ -87,6 +89,9 @@ final class CursorEngine {
     private func beginSessionIfNeeded() {
         guard session == nil, let baseScale = WindowServer.cursorScale() else { return }
         session = Session(baseScale: baseScale, lastTimestamp: CACurrentMediaTime())
+        if !settings.hasSeenWelcome {
+            settings.hasSeenWelcome = true
+        }
         upgrader.refresh()
         largestGrowth = Self.largestCursorScale / baseScale
         safety.sessionBegan(baseScale: baseScale)
@@ -103,6 +108,8 @@ final class CursorEngine {
         self.session = session
         let isShaking = detector.isShaking(at: CACurrentMediaTime())
         let maximumGrowth = settings.sizeLimit.maximumScale(largestGrowth: largestGrowth)
+        growth.doublingTime = settings.growthSpeed.doublingTime
+        growth.settleRate = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? Self.reducedMotionSettleRate : Self.settleRate
 
         if let pinnedScale {
             growth.pin(at: min(pinnedScale, maximumGrowth))

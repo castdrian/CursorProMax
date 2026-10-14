@@ -28,11 +28,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        guard !Self.isHostingTests else { return }
         restorationGuard.install()
         engine.start()
         applyDebugOptions()
         if !settings.showsMenuBarItem && !launchedAsLoginItem {
             settingsWindow.show()
+        } else if !settings.hasSeenWelcome && !launchedAsLoginItem && !debugOptions.opensMenuOnLaunch {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(600))
+                StatusItemOpener.openMenuBarExtra()
+            }
         }
     }
 
@@ -41,6 +47,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settingsWindow.show()
         }
         return false
+    }
+
+    private static var isHostingTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
     private static func isLoginItemLaunch(_ event: NSAppleEventDescriptor?) -> Bool {
@@ -55,6 +65,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func applyDebugOptions() {
         if let pinnedScale = debugOptions.pinnedScale {
             engine.pin(scale: pinnedScale)
+        }
+        if debugOptions.checksForUpdatesOnLaunch {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                updates.checkForUpdates()
+            }
         }
         if debugOptions.opensMenuOnLaunch {
             Task { @MainActor in

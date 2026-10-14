@@ -5,7 +5,16 @@ struct RegisteredCursor: @unchecked Sendable {
     let pointSize: CGSize
     let hotspot: CGPoint
     let frameCount: Int
+    let frameDuration: Double
     let images: [CGImage]
+
+    func withImages(_ images: [CGImage]) -> RegisteredCursor {
+        RegisteredCursor(pointSize: pointSize, hotspot: hotspot, frameCount: frameCount, frameDuration: frameDuration, images: images)
+    }
+
+    var stripSize: CGSize {
+        CGSize(width: pointSize.width, height: pointSize.height * CGFloat(max(frameCount, 1)))
+    }
 }
 
 enum CursorRegistry {
@@ -20,14 +29,12 @@ enum CursorRegistry {
         Int32, UnsafePointer<CChar>, Bool, Bool, CGSize, CGPoint, Int, Double, CFArray, UnsafeMutablePointer<Int32>
     ) -> Int32
     private typealias CoreCursorSetFunction = @convention(c) (Int32, Int32) -> Int32
-    private typealias UnregisterAllFunction = @convention(c) (Int32) -> Int32
 
     private struct Functions: @unchecked Sendable {
         let connection: ConnectionFunction
         let copyImages: CopyImagesFunction
         let register: RegisterFunction
         let coreCursorSet: CoreCursorSetFunction
-        let unregisterAll: UnregisterAllFunction
 
         init?() {
             guard let skyLight = dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_NOW),
@@ -39,14 +46,12 @@ enum CursorRegistry {
             guard let connection = load("SLSMainConnectionID", from: skyLight, as: ConnectionFunction.self),
                   let copyImages = load("SLSCopyRegisteredCursorImages", from: skyLight, as: CopyImagesFunction.self),
                   let register = load("SLSRegisterCursorWithImages", from: skyLight, as: RegisterFunction.self),
-                  let coreCursorSet = load("CoreCursorSet", from: hiServices, as: CoreCursorSetFunction.self),
-                  let unregisterAll = load("CoreCursorUnregisterAll", from: hiServices, as: UnregisterAllFunction.self)
+                  let coreCursorSet = load("CoreCursorSet", from: hiServices, as: CoreCursorSetFunction.self)
             else { return nil }
             self.connection = connection
             self.copyImages = copyImages
             self.register = register
             self.coreCursorSet = coreCursorSet
-            self.unregisterAll = unregisterAll
         }
     }
 
@@ -71,7 +76,7 @@ enum CursorRegistry {
             functions.copyImages(connection, cName, &size, &hotspot, &frameCount, &frameDuration, &images)
         }
         guard result == 0, let list = images?.takeRetainedValue() as? [CGImage], !list.isEmpty else { return nil }
-        return RegisteredCursor(pointSize: size, hotspot: hotspot, frameCount: frameCount, images: list)
+        return RegisteredCursor(pointSize: size, hotspot: hotspot, frameCount: frameCount, frameDuration: frameDuration, images: list)
     }
 
     @discardableResult
@@ -81,17 +86,8 @@ enum CursorRegistry {
         return name.withCString { cName in
             functions.register(
                 functions.connection(), cName, true, true,
-                cursor.pointSize, cursor.hotspot, cursor.frameCount, 0, cursor.images as CFArray, &seed
+                cursor.pointSize, cursor.hotspot, cursor.frameCount, cursor.frameDuration, cursor.images as CFArray, &seed
             ) == 0
-        }
-    }
-
-    static func restoreSystemCursors() {
-        guard let functions else { return }
-        let connection = functions.connection()
-        _ = functions.unregisterAll(connection)
-        for identifier in systemCursorIdentifiers {
-            _ = functions.coreCursorSet(connection, Int32(identifier))
         }
     }
 }

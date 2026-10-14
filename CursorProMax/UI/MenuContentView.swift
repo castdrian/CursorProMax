@@ -8,12 +8,15 @@ struct MenuContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             StatusHeaderView()
+            if !settings.hasSeenWelcome {
+                WelcomeCardView { settings.hasSeenWelcome = true }
+            }
             VStack(spacing: 8) {
                 SettingCard {
                     SensitivitySettingView(sensitivity: $settings.shakeSensitivity)
                 }
                 SettingCard {
-                    SizeLimitSettingView(sizeLimit: $settings.sizeLimit)
+                    SizeLimitSettingView(sizeLimit: $settings.sizeLimit, growthSpeed: $settings.growthSpeed)
                 }
                 SettingCard {
                     LaunchAtLoginSettingView(loginItem: loginItem)
@@ -25,6 +28,7 @@ struct MenuContentView: View {
         }
         .padding(16)
         .frame(width: 320)
+        .animation(.smooth, value: settings.hasSeenWelcome)
         .onAppear(perform: loginItem.refresh)
     }
 }

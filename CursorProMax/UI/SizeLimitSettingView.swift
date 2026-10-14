@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SizeLimitSettingView: View {
     @Binding var sizeLimit: CursorSizeLimit
+    @Binding var growthSpeed: GrowthSpeed
 
     private static let presetRange: ClosedRange<Double> = 0...Double(CursorSizeLimit.presets.count - 1)
 
@@ -9,6 +10,22 @@ struct SizeLimitSettingView: View {
         SettingTitle(title: "Maximum size", systemImage: "plus.magnifyingglass", value: sizeLimit.title)
         slider
         SettingCaption(text: caption)
+        Divider()
+        HStack(spacing: 8) {
+            Text("Speed")
+                .font(.callout)
+                .fixedSize()
+            Spacer(minLength: 0)
+            Picker("Growth speed", selection: $growthSpeed) {
+                ForEach(GrowthSpeed.allCases) { speed in
+                    Text(speed.title).tag(speed)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .controlSize(.small)
+            .fixedSize()
+        }
     }
 
     private var slider: some View {

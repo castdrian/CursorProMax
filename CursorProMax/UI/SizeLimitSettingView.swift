@@ -6,7 +6,7 @@ struct SizeLimitSettingView: View {
     private static let presetRange: ClosedRange<Double> = 0...Double(CursorSizeLimit.presets.count - 1)
 
     var body: some View {
-        SettingTitle(title: "Maximum size", systemImage: "square.resize", value: sizeLimit.title)
+        SettingTitle(title: "Maximum size", systemImage: "plus.magnifyingglass", value: sizeLimit.title)
         slider
         SettingCaption(text: caption)
     }

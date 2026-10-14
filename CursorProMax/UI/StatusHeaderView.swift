@@ -5,7 +5,6 @@ struct StatusHeaderView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            CursorPreviewBadge(scale: engine.scale, isActive: engine.phase != .idle)
             VStack(alignment: .leading, spacing: 2) {
                 Text("CursorProMax")
                     .font(.title3.weight(.semibold))
@@ -29,26 +28,5 @@ struct StatusHeaderView: View {
         case .atMaximum: return "Maximum size · \(scaleText)"
         case .shrinking: return "Shrinking · \(scaleText)"
         }
-    }
-}
-
-struct CursorPreviewBadge: View {
-    static let diameter: CGFloat = 46
-
-    let scale: Double
-    let isActive: Bool
-
-    var body: some View {
-        Image(systemName: "cursorarrow")
-            .font(.system(size: 17, weight: .semibold))
-            .scaleEffect(previewScale, anchor: .center)
-            .foregroundStyle(isActive ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
-            .frame(width: Self.diameter, height: Self.diameter)
-            .glassEffect(isActive ? .regular.tint(.accentColor) : .regular, in: .circle)
-            .animation(.smooth(duration: 0.2), value: isActive)
-    }
-
-    private var previewScale: CGFloat {
-        CGFloat(min(1 + log2(max(scale, 1)) * 0.12, 1.6))
     }
 }

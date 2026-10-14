@@ -15,11 +15,11 @@ struct SizeLimitSettingView: View {
         Slider(value: presetPosition, in: Self.presetRange, step: 1) {
             Text("Maximum size")
         } minimumValueLabel: {
-            Image(systemName: "cursorarrow")
+            Image(systemName: "arrow.down.right.and.arrow.up.left")
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Smaller")
         } maximumValueLabel: {
-            Image(systemName: "cursorarrow.rays")
+            Image(systemName: "arrow.up.left.and.arrow.down.right")
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Largest")
         }

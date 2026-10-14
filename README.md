@@ -19,6 +19,7 @@ Shake to find your cursor, and keep shaking to make it bigger and bigger
 - Adjustable shake sensitivity, with Standard matching the macOS shake to locate gesture
 - A maximum size limit, from 2× up to the largest size macOS allows
 - Launch at login
+- Hide the menu bar icon if you like, and open the app again whenever you want its settings
 - Automatic updates through Sparkle
 - Lives in the menu bar, with no Dock icon and no Accessibility permission needed
 

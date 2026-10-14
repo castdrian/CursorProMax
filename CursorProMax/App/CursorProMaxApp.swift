@@ -5,9 +5,8 @@ struct CursorProMaxApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra {
+        MenuBarExtra(isInserted: showsMenuBarItem) {
             MenuContentView(
-                engine: appDelegate.engine,
                 settings: appDelegate.settings,
                 loginItem: appDelegate.loginItem,
                 updates: appDelegate.updates
@@ -17,5 +16,12 @@ struct CursorProMaxApp: App {
                 .accessibilityLabel("CursorProMax")
         }
         .menuBarExtraStyle(.window)
+    }
+
+    private var showsMenuBarItem: Binding<Bool> {
+        Binding(
+            get: { appDelegate.settings.showsMenuBarItem },
+            set: { appDelegate.settings.showsMenuBarItem = $0 }
+        )
     }
 }

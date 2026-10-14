@@ -1,14 +1,13 @@
 import SwiftUI
 
 struct MenuContentView: View {
-    let engine: CursorEngine
     @Bindable var settings: AppSettings
     let loginItem: LoginItemController
     let updates: UpdateController
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            StatusHeaderView(engine: engine)
+            StatusHeaderView()
             VStack(spacing: 8) {
                 SettingCard {
                     SensitivitySettingView(sensitivity: $settings.shakeSensitivity)
@@ -18,6 +17,8 @@ struct MenuContentView: View {
                 }
                 SettingCard {
                     LaunchAtLoginSettingView(loginItem: loginItem)
+                    Divider()
+                    MenuBarItemSettingView(showsMenuBarItem: $settings.showsMenuBarItem)
                 }
             }
             MenuFooterView(updates: updates)

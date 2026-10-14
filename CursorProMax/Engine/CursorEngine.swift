@@ -23,6 +23,7 @@ final class CursorEngine {
     @ObservationIgnored private let ticker = DisplayTicker()
     @ObservationIgnored private let presenter = CursorPresenter()
     @ObservationIgnored private let safety = CursorSafetyNet()
+    @ObservationIgnored private let upgrader = SystemCursorUpgrader()
     @ObservationIgnored private var detector = ShakeDetector()
     @ObservationIgnored private var growth = CursorGrowth()
     @ObservationIgnored private var session: Session?
@@ -40,6 +41,7 @@ final class CursorEngine {
     func start() {
         safety.recoverFromPreviousRun()
         safety.suppressShakeToLocate()
+        upgrader.upgrade()
         refreshLargestGrowth()
         monitor.start { [weak self] motion in
             self?.handle(motion)
@@ -49,6 +51,8 @@ final class CursorEngine {
     func stop() {
         monitor.stop()
         endSession(synchronously: true)
+        upgrader.restore()
+        NSCursor.arrow.set()
         safety.restoreShakeToLocate()
     }
 
@@ -83,6 +87,7 @@ final class CursorEngine {
     private func beginSessionIfNeeded() {
         guard session == nil, let baseScale = WindowServer.cursorScale() else { return }
         session = Session(baseScale: baseScale, lastTimestamp: CACurrentMediaTime())
+        upgrader.refresh()
         largestGrowth = Self.largestCursorScale / baseScale
         safety.sessionBegan(baseScale: baseScale)
         ticker.start(on: Self.screen(containing: NSEvent.mouseLocation)) { [weak self] timestamp in

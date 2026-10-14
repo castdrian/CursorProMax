@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/castdrian/CursorProMax/compare/v1.0.0...v1.1.0) (2026-10-14)
+
+### Features
+
+* add growth speeds, a welcome hint, sharper animated cursors and better update prompts ([388d83b](https://github.com/castdrian/CursorProMax/commit/388d83b3ba07e9d8f90311c5cc0e57dcf489101d))
+* keep every system cursor sharp when it is enlarged ([9990d69](https://github.com/castdrian/CursorProMax/commit/9990d691ae2aaa7cbd49617c238ef117cc820a01))
+
 ## 1.0.0 (2026-10-14)
 
 ### Features

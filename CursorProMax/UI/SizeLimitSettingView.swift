@@ -19,9 +19,9 @@ struct SizeLimitSettingView: View {
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Smaller")
         } maximumValueLabel: {
-            Image(systemName: "infinity")
+            Image(systemName: "cursorarrow.rays")
                 .foregroundStyle(.secondary)
-                .accessibilityLabel("No limit")
+                .accessibilityLabel("Largest")
         }
         .labelsHidden()
         .controlSize(.small)
@@ -29,7 +29,7 @@ struct SizeLimitSettingView: View {
 
     private var caption: String {
         switch sizeLimit {
-        case .unlimited: "Grows until the pointer covers the whole screen."
+        case .unlimited: "Grows to the largest size macOS allows."
         case .scale: "Stops growing at \(sizeLimit.title) the normal pointer size."
         }
     }

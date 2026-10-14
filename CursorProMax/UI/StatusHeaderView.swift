@@ -26,7 +26,7 @@ struct StatusHeaderView: View {
         switch engine.phase {
         case .idle: return "Shake the pointer to supersize it"
         case .growing: return "Growing · \(scaleText)"
-        case .atMaximum: return engine.isCoveringScreen ? "Covering the screen · \(scaleText)" : "Maximum size · \(scaleText)"
+        case .atMaximum: return "Maximum size · \(scaleText)"
         case .shrinking: return "Shrinking · \(scaleText)"
         }
     }

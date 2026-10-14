@@ -13,7 +13,7 @@ struct CursorProMaxApp: App {
                 updates: appDelegate.updates
             )
         } label: {
-            Image(systemName: "cursorarrow.motionlines")
+            Image(systemName: "cursorarrow.rays")
                 .accessibilityLabel("CursorProMax")
         }
         .menuBarExtraStyle(.window)

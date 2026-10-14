@@ -2,7 +2,7 @@
 
 [![Release](https://github.com/castdrian/CursorProMax/actions/workflows/release.yml/badge.svg)](https://github.com/castdrian/CursorProMax/actions/workflows/release.yml)
 
-Shake to find your cursor, and keep shaking until it covers the whole screen
+Shake to find your cursor, and keep shaking to make it bigger and bigger
 
 <p align="center"><img src="assets/screenshots/menu.png" alt="The CursorProMax menu with shake sensitivity, maximum size and launch at login settings" width="320"></p>
 
@@ -14,10 +14,10 @@ Shake to find your cursor, and keep shaking until it covers the whole screen
 
 ## Features
 
-- The pointer keeps growing for as long as you shake it, like on KDE, instead of stopping at one size like macOS
-- With no size limit it grows until it covers the entire screen, then shrinks back when you stop
+- The real macOS pointer keeps growing for as long as you shake it, like on KDE, instead of stopping at one size
+- Grows up to the largest size macOS allows, stays sharp at every size, and shrinks back when you stop
 - Adjustable shake sensitivity, with Standard matching the macOS shake to locate gesture
-- A maximum size limit, from 2× up to no limit at all
+- A maximum size limit, from 2× up to the largest size macOS allows
 - Launch at login
 - Automatic updates through Sparkle
 - Lives in the menu bar, with no Dock icon and no Accessibility permission needed

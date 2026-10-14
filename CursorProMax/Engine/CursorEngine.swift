@@ -12,23 +12,24 @@ final class CursorEngine {
         case shrinking
     }
 
+    static let largestCursorScale = WindowServer.cursorScaleRange.upperBound
+
     private(set) var scale = CursorGrowth.restingScale
     private(set) var phase = Phase.idle
-    private(set) var isCoveringScreen = false
+    private(set) var largestGrowth = CursorGrowth.restingScale
 
     @ObservationIgnored private let settings: AppSettings
     @ObservationIgnored private let monitor = MouseMotionMonitor()
     @ObservationIgnored private let ticker = DisplayTicker()
-    @ObservationIgnored private let overlay = CursorOverlay()
-    @ObservationIgnored private let cursorVisibility = SystemCursorVisibility()
+    @ObservationIgnored private let presenter = CursorPresenter()
+    @ObservationIgnored private let safety = CursorSafetyNet()
     @ObservationIgnored private var detector = ShakeDetector()
     @ObservationIgnored private var growth = CursorGrowth()
     @ObservationIgnored private var session: Session?
     @ObservationIgnored private var pinnedScale: Double?
 
     private struct Session {
-        var artwork: CursorArtwork
-        var baseScale: CGFloat
+        let baseScale: Double
         var lastTimestamp: CFTimeInterval
     }
 
@@ -37,6 +38,9 @@ final class CursorEngine {
     }
 
     func start() {
+        safety.recoverFromPreviousRun()
+        safety.suppressShakeToLocate()
+        refreshLargestGrowth()
         monitor.start { [weak self] motion in
             self?.handle(motion)
         }
@@ -44,7 +48,8 @@ final class CursorEngine {
 
     func stop() {
         monitor.stop()
-        endSession()
+        endSession(synchronously: true)
+        safety.restoreShakeToLocate()
     }
 
     func pin(scale: Double) {
@@ -60,7 +65,6 @@ final class CursorEngine {
     func screensChanged() {
         let wasPinned = pinnedScale
         endSession()
-        overlay.screensChanged()
         if let wasPinned {
             pin(scale: wasPinned)
         }
@@ -77,9 +81,10 @@ final class CursorEngine {
     }
 
     private func beginSessionIfNeeded() {
-        guard session == nil, let artwork = CursorArtwork.current() else { return }
-        session = Session(artwork: artwork, baseScale: SystemCursorSize.current(), lastTimestamp: CACurrentMediaTime())
-        overlay.present(artwork)
+        guard session == nil, let baseScale = WindowServer.cursorScale() else { return }
+        session = Session(baseScale: baseScale, lastTimestamp: CACurrentMediaTime())
+        largestGrowth = Self.largestCursorScale / baseScale
+        safety.sessionBegan(baseScale: baseScale)
         ticker.start(on: Self.screen(containing: NSEvent.mouseLocation)) { [weak self] timestamp in
             self?.tick(at: timestamp)
         }
@@ -91,21 +96,13 @@ final class CursorEngine {
         let elapsed = min(max(timestamp - session.lastTimestamp, 0), 1.0 / 20)
         session.lastTimestamp = timestamp
         self.session = session
-
-        let pointer = NSEvent.mouseLocation
-        let screenFrame = Self.screen(containing: pointer)?.frame ?? .zero
-        let coverageScale = ScreenCoverage.scaleToCover(
-            screenFrame,
-            from: pointer,
-            interiorRadius: session.artwork.interiorRadius(baseScale: session.baseScale)
-        )
-        let maximumScale = settings.sizeLimit.maximumScale(screenCoverageScale: coverageScale)
         let isShaking = detector.isShaking(at: CACurrentMediaTime())
+        let maximumGrowth = settings.sizeLimit.maximumScale(largestGrowth: largestGrowth)
 
         if let pinnedScale {
-            growth.pin(at: pinnedScale)
+            growth.pin(at: min(pinnedScale, maximumGrowth))
         } else {
-            growth.advance(by: elapsed, isShaking: isShaking, maximumScale: maximumScale)
+            growth.advance(by: elapsed, isShaking: isShaking, maximumScale: maximumGrowth)
         }
 
         if growth.isResting && !isShaking && pinnedScale == nil {
@@ -113,31 +110,34 @@ final class CursorEngine {
             return
         }
 
-        let placement = session.artwork.placement(baseScale: session.baseScale)
-        overlay.place(cursorFrame: placement.frame(pointer: pointer, scale: growth.scale, coverageScale: coverageScale))
-        cursorVisibility.hide()
-        publish(isShaking: isShaking || pinnedScale != nil, maximumScale: maximumScale, coverageScale: coverageScale)
+        presenter.present(scale: session.baseScale * growth.scale)
+        publish(isShaking: isShaking || pinnedScale != nil, maximumGrowth: maximumGrowth)
     }
 
-    private func publish(isShaking: Bool, maximumScale: Double, coverageScale: Double) {
-        let atMaximum = growth.scale >= maximumScale * 0.999
+    private func publish(isShaking: Bool, maximumGrowth: Double) {
+        let atMaximum = growth.scale >= maximumGrowth * 0.999
         let nextPhase: Phase = isShaking ? (atMaximum ? .atMaximum : .growing) : .shrinking
         if phase != nextPhase { phase = nextPhase }
-        let covering = growth.scale >= coverageScale * 0.999
-        if isCoveringScreen != covering { isCoveringScreen = covering }
-        if abs(scale - growth.scale) >= 0.01 || growth.scale == maximumScale { scale = growth.scale }
+        if abs(scale - growth.scale) >= 0.01 || growth.scale == maximumGrowth { scale = growth.scale }
     }
 
-    private func endSession() {
+    private func refreshLargestGrowth() {
+        if let baseScale = WindowServer.cursorScale() {
+            largestGrowth = Self.largestCursorScale / baseScale
+        }
+    }
+
+    private func endSession(synchronously: Bool = false) {
         ticker.stop()
-        overlay.dismiss()
-        cursorVisibility.show()
+        if let session {
+            presenter.restore(scale: session.baseScale, synchronously: synchronously)
+            safety.sessionEnded()
+        }
         detector.reset()
         growth.reset()
         session = nil
         scale = CursorGrowth.restingScale
         phase = .idle
-        isCoveringScreen = false
     }
 
     private static func screen(containing point: CGPoint) -> NSScreen? {

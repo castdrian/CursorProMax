@@ -5,7 +5,7 @@ enum CursorSizeLimit: Sendable, Hashable {
     case unlimited
 
     static let presets: [CursorSizeLimit] = [
-        .scale(2), .scale(4), .scale(8), .scale(16), .scale(32), .scale(64), .scale(128), .unlimited,
+        .scale(2), .scale(3), .scale(4), .scale(6), .scale(8), .unlimited,
     ]
 
     init(storedValue: Double) {
@@ -22,7 +22,7 @@ enum CursorSizeLimit: Sendable, Hashable {
     var title: String {
         switch self {
         case .scale(let value): "\(value.formatted(.number.precision(.fractionLength(0...1))))×"
-        case .unlimited: "No limit"
+        case .unlimited: "Largest"
         }
     }
 
@@ -34,10 +34,10 @@ enum CursorSizeLimit: Sendable, Hashable {
         self = Self.presets[min(max(presetIndex, 0), Self.presets.count - 1)]
     }
 
-    func maximumScale(screenCoverageScale: Double) -> Double {
+    func maximumScale(largestGrowth: Double) -> Double {
         switch self {
-        case .scale(let value): min(value, screenCoverageScale)
-        case .unlimited: screenCoverageScale
+        case .scale(let value): max(min(value, largestGrowth), 1)
+        case .unlimited: max(largestGrowth, 1)
         }
     }
 }

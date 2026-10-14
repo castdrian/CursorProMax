@@ -29,7 +29,7 @@ final class CursorRestorationGuard {
             let source = DispatchSource.makeSignalSource(signal: signalNumber, queue: .main)
             source.setEventHandler { [engine] in
                 MainActor.assumeIsolated {
-                    engine.restoreSystemCursor()
+                    engine.stop()
                     exit(EXIT_SUCCESS)
                 }
             }

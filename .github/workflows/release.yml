@@ -60,6 +60,8 @@ jobs:
     publish:
         needs: [checks, version, build]
         runs-on: ubuntu-latest
+        outputs:
+            published: ${{ steps.released.outputs.published }}
         permissions:
             contents: write
             issues: write
@@ -87,9 +89,19 @@ jobs:
                   GIT_COMMITTER_NAME: github-actions[bot]
                   GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
               run: $SEMANTIC_RELEASE
+            - name: Confirm the release was published
+              id: released
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  VERSION: ${{ needs.version.outputs.version }}
+              run: |
+                  if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+                    echo "published=true" >> "$GITHUB_OUTPUT"
+                  fi
 
     pages:
         needs: publish
+        if: needs.publish.outputs.published == 'true'
         runs-on: ubuntu-latest
         permissions:
             pages: write

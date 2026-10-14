@@ -24,6 +24,10 @@ Shake to find your cursor, and keep shaking to make it bigger and bigger
 
 Requires macOS 26 or later.
 
+## License
+
+CursorProMax is free software under the [GNU General Public License v3.0](LICENSE).
+
 ## Contributors
 
 [![Contributors](https://contrib.rocks/image?repo=castdrian/CursorProMax)](https://github.com/castdrian/CursorProMax/graphs/contributors)

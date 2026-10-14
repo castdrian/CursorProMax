@@ -8,11 +8,11 @@ struct SensitivitySettingView: View {
         Slider(value: sliderValue, in: ShakeSensitivity.range, step: 0.25) {
             Text("Shake sensitivity")
         } minimumValueLabel: {
-            Image(systemName: "tortoise")
+            Image(systemName: "gauge.with.dots.needle.0percent")
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Lower")
         } maximumValueLabel: {
-            Image(systemName: "hare")
+            Image(systemName: "gauge.with.dots.needle.100percent")
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Higher")
         }

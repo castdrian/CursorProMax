@@ -4,7 +4,7 @@ struct SensitivitySettingView: View {
     @Binding var sensitivity: ShakeSensitivity
 
     var body: some View {
-        SettingTitle(title: "Shake sensitivity", systemImage: "hand.wave", value: sensitivity.title)
+        SettingTitle(title: "Shake sensitivity", systemImage: "waveform.path", value: sensitivity.title)
         Slider(value: sliderValue, in: ShakeSensitivity.range, step: 0.25) {
             Text("Shake sensitivity")
         } minimumValueLabel: {

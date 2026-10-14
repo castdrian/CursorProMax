@@ -5,7 +5,7 @@ struct LaunchAtLoginSettingView: View {
 
     var body: some View {
         Toggle(isOn: isEnabled) {
-            SettingTitle(title: "Launch at login", systemImage: "sunrise")
+            SettingTitle(title: "Launch at login", systemImage: "person.crop.circle")
         }
         .toggleStyle(.switch)
         .controlSize(.small)
